@@ -1,7 +1,3 @@
-from __future__ import print_function
-
-import pprint
-
 # TODO: Add pyre annotations?
 # TODO: should alg subclasses call super() on parent classes even if parent currently does nothing?
 
@@ -22,7 +18,7 @@ class Sequence(Algorithm):
 class Repeatable(Algorithm):
   def __init__(self, amount=1):
     if self.__class__ is Repeatable:
-      raise NotImplementedError("Cannot construct an Repeatable class instance directly. Construct a subclass instead.")
+      raise NotImplementedError("Cannot construct a Repeatable class instance directly. Construct a subclass instead.")
     self.amount = amount
 
   def amountSuffixString(self):
@@ -34,13 +30,13 @@ class Repeatable(Algorithm):
     return out
 
 class Group(Repeatable):
-  def __init__(self, nestedAlgs, amount=1):
+  def __init__(self, nestedAlg, amount=1):
     Repeatable.__init__(self, amount)
-    self.nestedAlgs = nestedAlgs
+    self.nestedAlg = nestedAlg
 
   def __str__(self):
     return "(%s)%s" % (
-      " ".join([str(nested) for nested in self.nestedAlgs]),
+      str(self.nestedAlg),
       self.amountSuffixString()
     )
 
@@ -117,7 +113,7 @@ class CommentLong(Algorithm):
 toJSONishFunctions = {
   Sequence:     (lambda a: {"type": "sequence", "nestedAlgs": [toJSONish(nested) for nested in a.nestedAlgs]}),
   BaseMove:     (lambda a: {"type": "baseMove", "family": a.family, "amount": a.amount}),
-  Group:        (lambda a: {"type": "group", "nestedAlgs": [toJSONish(nested) for nested in a.nestedAlgs], "amount": a.amount}),
+  Group:        (lambda a: {"type": "group", "nestedAlg": toJSONish(a.nestedAlg), "amount": a.amount}),
   BaseMove:     (lambda a: {"type": "baseMove", "family": a.family, "amount": a.amount}),
   Commutator:   (lambda a: {"type": "commutator", "A": toJSONish(a.A), "B": toJSONish(a.B), "amount": a.amount}),
   Conjugate:    (lambda a: {"type": "conjugate", "A": toJSONish(a.A), "B": toJSONish(a.B), "amount": a.amount}),
@@ -129,34 +125,3 @@ toJSONishFunctions = {
 
 def toJSONish(a):
   return toJSONishFunctions[a.__class__](a)
-
-try:
-  Repeatable(2)
-except NotImplementedError, e:
-  print("Error raised as expected: %s" % e)
-
-a = Sequence([
-  BaseMove("R", 2),
-  Pause(),
-  Group([
-    BaseMove("U", 2),
-    BaseMove("F", -1)
-  ]),
-  CommentShort("// hi there"),
-  NewLine(),
-  CommentLong("/* lots to say\n   here! */"),
-  Commutator(
-    Sequence([
-      BaseMove("R"),
-      BaseMove("U"),
-      CommentLong("/* wheee! */"),
-      BaseMove("R", -2),
-    ]),
-    Conjugate(
-      BaseMove("R"),
-      BaseMove("U")
-    )
-  )
-])
-print(a)
-pprint.pprint(toJSONish(a), indent=2)

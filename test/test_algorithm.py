@@ -16,18 +16,18 @@ except NotImplementedError, e:
 a = alg.Sequence([
   alg.BaseMove("R", 2),
   alg.Pause(),
-  alg.Group([
+  alg.Group(alg.Sequence([
     alg.BaseMove("U", 2),
     alg.BaseMove("F", -1)
-  ]),
-  alg.CommentShort("// hi there"),
+  ])),
+  alg.CommentShort(" hi there"),
   alg.NewLine(),
-  alg.CommentLong("/* lots to say\n    here! */"),
+  alg.CommentLong(" lots to say\n    here! "),
   alg.Commutator(
     alg.Sequence([
       alg.BaseMove("R"),
       alg.BaseMove("U"),
-      alg.CommentLong("/* wheee! */"),
+      alg.CommentLong(" wheee! "),
       alg.BaseMove("R", -2),
     ]),
     alg.Conjugate(
