@@ -1,3 +1,3 @@
 .PHONY: test
 test:
-	julia alg.jl
+	julia test.jl

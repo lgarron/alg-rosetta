@@ -1,58 +1,49 @@
+module Alg
+
+export AmountType
+const AmountType = Int16
+
+export Algorithm
 abstract type Algorithm
 end
 
+export Repeatable
 abstract type Repeatable <: Algorithm
 end
 
+export Sequence
 type Sequence <: Algorithm
   nestedAlgs::Array{Repeatable,1}
 end
 
+export BaseMove
 type BaseMove <: Repeatable
   family::String
-  amount::Int16
+  amount::AmountType
 end
+BaseMove(family::String) = BaseMove(family, 1)
 
+export Group
 type Group <: Repeatable
   nestedAlg::Algorithm
-  amount::Int16
+  amount::AmountType
 end
+Group(nestedAlg::Algorithm) = Group(nestedAlg, 1)
 
+export Commutator
 type Commutator <: Repeatable
   A::Algorithm
   B::Algorithm
-  amount::Int16
+  amount::AmountType
 end
+Commutator(A::Algorithm, B::Algorithm) = Commutator(A, B, 1)
 
+export Conjugate
 type Conjugate <: Repeatable
   A::Algorithm
   B::Algorithm
-  amount::Int16
+  amount::AmountType
 end
+Conjugate(A::Algorithm, B::Algorithm) = Conjugate(A, B, 1)
 
-invert(a::Sequence) = Sequence(
-  reverse([invert(alg) for alg in a.nestedAlgs])
-)
-invert(a::Group) = Group(
-  invert(a.nestedAlg),
-  a.amount
-)
-invert(a::BaseMove) = BaseMove(
-  a.family,
-  a.amount
-)
-invert(a::Commutator) = Commutator(
-  invert(a.B),
-  invert(a.A),
-  a.amount
-)
-
-println(invert(Sequence([
-  Commutator(
-    BaseMove("R", 1),
-    BaseMove("U", 1),
-    2
-  ),
-  BaseMove("D", 2),
-  BaseMove("F", -1)
-])))
+end
