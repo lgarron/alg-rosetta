@@ -92,8 +92,7 @@ function toString(a::Alg.Sequence)
     write(out, toString(value))
     last = value
   end
-  # TODO: take!() ?
-  return String(out)
+  return String(take!(out))
 end
 
 function toString(a::Alg.Group)
