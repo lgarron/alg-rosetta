@@ -5,33 +5,34 @@ using Alg
 
 # Inverse
 
-invert(a::Alg.Sequence) = Alg.Sequence(
+invert(a::Alg.Sequence)::Alg.Sequence = Alg.Sequence(
   reverse([invert(alg) for alg in a.nestedAlgs])
 )
 
-invert(a::Alg.Group) = Alg.Group(
+invert(a::Alg.Group)::Alg.Group = Alg.Group(
   invert(a.nestedAlg),
   a.amount
 )
 
-invert(a::Alg.BaseMove) = Alg.BaseMove(
+invert(a::Alg.BaseMove)::Alg.BaseMove = Alg.BaseMove(
   a.family,
   -a.amount
 )
 
-invert(a::Alg.Commutator) = Alg.Commutator(
+invert(a::Alg.Commutator)::Alg.Commutator = Alg.Commutator(
   a.B,
   a.A,
   a.amount
 )
 
-invert(a::Alg.Conjugate) = Alg.Conjugate(
+invert(a::Alg.Conjugate)::Alg.Conjugate = Alg.Conjugate(
   a.A,
   invert(a.B),
   a.amount
 )
 
-invert(a::Alg.Pause) = Alg.Pause()
+invert(a::Alg.Pause)::Alg.Pause = Alg.Pause()
+
 
 # Equality
 
@@ -58,31 +59,31 @@ Base.:(==)(a1::Alg.Group, a2::Alg.Group) = (
   return a1.nestedAlg == a2.nestedAlg
 )
 
-Base.:(==)(a1::Alg.BaseMove, a2::Alg.Algorithm) = false
-Base.:(==)(a1::Alg.BaseMove, a2::Alg.BaseMove) = (
+Base.:(==)(a1::Alg.BaseMove, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.BaseMove, a2::Alg.BaseMove)::Bool = (
   a1.family == a2.family &&
   a1.amount == a2.amount
 )
 
-Base.:(==)(a1::Alg.Commutator, a2::Alg.Algorithm) = false
-Base.:(==)(a1::Alg.Commutator, a2::Alg.Commutator) = (
+Base.:(==)(a1::Alg.Commutator, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.Commutator, a2::Alg.Commutator)::Bool = (
   return a1.A == a2.A && a1.B == a2.B
 )
 
-Base.:(==)(a1::Alg.Conjugate, a2::Alg.Algorithm) = false
-Base.:(==)(a1::Alg.Conjugate, a2::Alg.Conjugate) = (
+Base.:(==)(a1::Alg.Conjugate, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.Conjugate, a2::Alg.Conjugate)::Bool = (
   return a1.A == a2.A && a1.B == a2.B
 )
 
-Base.:(==)(a1::Alg.Pause, a2::Alg.Algorithm) = false
-Base.:(==)(a1::Alg.Pause, a2::Alg.Pause) = true
+Base.:(==)(a1::Alg.Pause, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.Pause, a2::Alg.Pause)::Bool = true
 
 # toString
 
-spacer(::Alg.Algorithm, ::Alg.Algorithm) = " "
-spacer(::Alg.Pause, ::Alg.Pause) = ""
+spacer(::Alg.Algorithm, ::Alg.Algorithm)::String = " "
+spacer(::Alg.Pause, ::Alg.Pause)::String = ""
 
-function toString(a::Alg.Sequence)
+function toString(a::Alg.Sequence)::String
   out = IOBuffer()
   local last = nothing
   for (index, value) in enumerate(a.nestedAlgs)
@@ -95,11 +96,11 @@ function toString(a::Alg.Sequence)
   return String(take!(out))
 end
 
-function toString(a::Alg.Group)
+function toString(a::Alg.Group)::String
   return "(" * toString(a.nestedAlg) * ")" * repetitionSuffix(a.amount)
 end
 
-function repetitionSuffix(amount::Alg.AmountType)
+function repetitionSuffix(amount::Alg.AmountType)::String
   output = ""
   absAmount = abs(amount)
   if absAmount != 1
@@ -111,19 +112,19 @@ function repetitionSuffix(amount::Alg.AmountType)
   return output
 end
 
-function toString(a::Alg.BaseMove)
+function toString(a::Alg.BaseMove)::String
   return a.family * repetitionSuffix(a.amount)
 end
 
-function toString(a::Alg.Commutator)
+function toString(a::Alg.Commutator)::String
   return "[" * toString(a.A) * ", " * toString(a.B) * "]" * repetitionSuffix(a.amount)
 end
 
-function toString(a::Alg.Conjugate)
+function toString(a::Alg.Conjugate)::String
   return "[" * toString(a.A) * ": " * toString(a.B) * "]" * repetitionSuffix(a.amount)
 end
 
-function toString(a::Alg.Pause)
+function toString(a::Alg.Pause)::String
   return "."
 end
 
