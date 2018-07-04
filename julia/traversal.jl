@@ -31,6 +31,8 @@ invert(a::Alg.Conjugate) = Alg.Conjugate(
   a.amount
 )
 
+invert(a::Alg.Pause) = Alg.Pause()
+
 # Equality
 
 # For an alg of a given alg.Algorithm subtype, we first define it *not* to be
@@ -72,10 +74,26 @@ Base.:(==)(a1::Alg.Conjugate, a2::Alg.Conjugate) = (
   return a1.A == a2.A && a1.B == a2.B
 )
 
+Base.:(==)(a1::Alg.Pause, a2::Alg.Algorithm) = false
+Base.:(==)(a1::Alg.Pause, a2::Alg.Pause) = true
+
 # toString
 
+spacer(::Alg.Algorithm, ::Alg.Algorithm) = " "
+spacer(::Alg.Pause, ::Alg.Pause) = ""
+
 function toString(a::Alg.Sequence)
-  return join([toString(alg) for alg in a.nestedAlgs], " ")
+  out = IOBuffer()
+  local last = nothing
+  for (index, value) in enumerate(a.nestedAlgs)
+    if index > 1
+      write(out, spacer(last, value))
+    end
+    write(out, toString(value))
+    last = value
+  end
+  # TODO: take!() ?
+  return String(out)
 end
 
 function toString(a::Alg.Group)
@@ -104,6 +122,10 @@ end
 
 function toString(a::Alg.Conjugate)
   return "[" * toString(a.A) * ": " * toString(a.B) * "]" * repetitionSuffix(a.amount)
+end
+
+function toString(a::Alg.Pause)
+  return "."
 end
 
 # clone

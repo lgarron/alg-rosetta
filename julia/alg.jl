@@ -7,13 +7,17 @@ export Algorithm
 abstract type Algorithm
 end
 
+export Unit
+abstract type Unit <: Algorithm
+end
+
 export Repeatable
-abstract type Repeatable <: Algorithm
+abstract type Repeatable <: Unit
 end
 
 export Sequence
 type Sequence <: Algorithm
-  nestedAlgs::Array{Repeatable,1}
+  nestedAlgs::Array{Unit,1}
 end
 
 export BaseMove
@@ -45,5 +49,9 @@ type Conjugate <: Repeatable
   amount::AmountType
 end
 Conjugate(A::Algorithm, B::Algorithm) = Conjugate(A, B, 1)
+
+export Pause
+type Pause <: Unit
+end
 
 end

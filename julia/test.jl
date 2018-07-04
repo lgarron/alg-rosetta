@@ -35,6 +35,14 @@ println(Alg.Sequence([
   Alg.BaseMove("F", -1)
 ]) == Alg.BaseMove("D", 2))
 
+println(Traversal.toString(Alg.Sequence([
+  Alg.BaseMove("D", 2),
+  Alg.Pause(),
+  Alg.Pause(),
+  Alg.Pause(),
+  Alg.BaseMove("F", -1)
+])))
+
 println(Traversal.toString(Alg.Conjugate(
   Alg.BaseMove("F"),
   Alg.Commutator(
