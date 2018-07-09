@@ -33,6 +33,64 @@ invert(a::Alg.Conjugate)::Alg.Conjugate = Alg.Conjugate(
 
 invert(a::Alg.Pause)::Alg.Pause = Alg.Pause()
 
+# concat
+
+# TODO: Turn into an iterator
+listWrap(a::Alg.Unit)::Array{<:Unit,1} = [a]
+listWrap(a::Alg.Sequence)::Array{<:Unit,1} = a.nestedAlgs
+
+function listJoin(l::Array{<:Alg.Algorithm,1})::Array{Unit,1}
+  return mapreduce(listWrap, vcat, [], l)
+end
+
+concat(a1::Alg.Unit, a2::Alg.Unit) = Alg.Sequence(vcat(
+  listWrap(a1),
+  listWrap(a2)
+))
+
+# flatten
+
+function flatten(a::Alg.Sequence)::Alg.Sequence
+  return Alg.Sequence(listJoin([flatten(n) for n in a.nestedAlgs]))
+end
+
+function repeat(a::Alg.Algorithm, n::Alg.AmountType)::Alg.Algorithm
+  # TODO: Catch n == 0?
+  if n < 0
+    return repeat(invert(a), -n)
+  end
+  if n == 1
+    return a
+  end
+  return Alg.Sequence(listJoin([a for i in 1:n]))
+end
+
+function flatten(a::Alg.Group)::Alg.Algorithm
+  return repeat(flatten(a.nestedAlg), a.amount)
+end
+
+flatten(a::Alg.BaseMove)::Alg.BaseMove = a
+
+flatten(a::Alg.Commutator)::Alg.Sequence = repeat(
+  Alg.Sequence(listJoin([
+    flatten(a.A),
+    flatten(a.B),
+    flatten(invert(a.A)),
+    flatten(invert(a.B))
+  ])),
+  a.amount
+)
+
+flatten(a::Alg.Conjugate)::Alg.Sequence = repeat(
+  Alg.Sequence(listJoin([
+    flatten(a.A),
+    flatten(a.B),
+    flatten(invert(a.A))
+  ])),
+  a.amount
+)
+
+flatten(a::Alg.Pause)::Alg.Pause = a
 
 # Equality
 
@@ -130,7 +188,7 @@ end
 
 # clone
 # invert
-# expand
+# flatten
 # countBaseMoves
 # structureEquals
 # coalesceMoves
