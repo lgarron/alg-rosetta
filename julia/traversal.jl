@@ -3,6 +3,30 @@ include("alg.jl")
 module Traversal
 using Alg
 
+function BaseMoveWithNewAmount(a::Alg.RotationMove, amount::Alg.AmountType)::Alg.RotationMove
+  return Alg.RotationMove(
+    a.family,
+    amount
+  )
+end
+
+function BaseMoveWithNewAmount(a::Alg.SliceMove, amount::Alg.AmountType)::Alg.SliceMove
+  return Alg.SliceMove(
+    a.slice,
+    a.family,
+    amount
+  )
+end
+
+function BaseMoveWithNewAmount(a::Alg.WideMove, amount::Alg.AmountType)::Alg.WideMove
+  return Alg.WideMove(
+    a.startSlice,
+    a.endSlice,
+    a.family,
+    amount
+  )
+end
+
 # Inverse
 
 invert(a::Alg.Sequence)::Alg.Sequence = Alg.Sequence(
@@ -14,10 +38,9 @@ invert(a::Alg.Group)::Alg.Group = Alg.Group(
   a.amount
 )
 
-invert(a::Alg.BaseMove)::Alg.BaseMove = Alg.BaseMove(
-  a.family,
-  -a.amount
-)
+function invert(a::Alg.BaseMove)::Alg.BaseMove
+  return BaseMoveWithNewAmount(a, -a.amount)
+end
 
 invert(a::Alg.Commutator)::Alg.Commutator = Alg.Commutator(
   a.B,
@@ -117,9 +140,38 @@ Base.:(==)(a1::Alg.Group, a2::Alg.Group) = (
   return a1.nestedAlg == a2.nestedAlg
 )
 
-Base.:(==)(a1::Alg.BaseMove, a2::Alg.Algorithm)::Bool = false
-Base.:(==)(a1::Alg.BaseMove, a2::Alg.BaseMove)::Bool = (
+Base.:(==)(a1::Alg.RotationMove, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.RotationMove, a2::Alg.RotationMove)::Bool = (
   a1.family == a2.family &&
+  a1.amount == a2.amount
+)
+
+function NullableEqual(a::Nullable, b::Nullable)
+  if isnull(a)
+    return isnull(b)
+  end
+  # From here on, `a` has a value.
+  if isnull(b)
+    return false
+  end
+  # From here on, `b` has a value.
+  return get(a) == get(b)
+end
+
+# TODO: Decide if we really want 1R != R
+Base.:(==)(a1::Alg.SliceMove, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.SliceMove, a2::Alg.SliceMove)::Bool = (
+  a1.family == a2.family &&
+  NullableEqual(a1.slice, a1.slice) &&
+  a1.amount == a2.amount
+)
+
+# TODO: Decide if we really want 3r != r and 1-3r != 3r
+Base.:(==)(a1::Alg.WideMove, a2::Alg.Algorithm)::Bool = false
+Base.:(==)(a1::Alg.WideMove, a2::Alg.WideMove)::Bool = (
+  a1.family == a2.family &&
+  NullableEqual(a1.startSlice, a1.startSlice) &&
+  NullableEqual(a1.endSlice, a1.endSlice) &&
   a1.amount == a2.amount
 )
 
@@ -170,8 +222,32 @@ function repetitionSuffix(amount::Alg.AmountType)::String
   return output
 end
 
-function toString(a::Alg.BaseMove)::String
+# TODO: Throw error for BaseMove by default?
+function toString(a::Alg.RotationMove)::String
   return a.family * repetitionSuffix(a.amount)
+end
+
+function toString(a::Alg.SliceMove)::String
+  out = a.family * repetitionSuffix(a.amount)
+  if isnull(a.slice)
+    return out
+  end
+  return string(get(a.slice)) * out
+end
+
+function toString(a::Alg.WideMove)::String
+  out = a.family * repetitionSuffix(a.amount)
+  if isnull(a.endSlice)
+    if !isnull(a.startSlice)
+      throw(NullException())
+    end
+    return out
+  end
+  out = string(get(a.endSlice)) * out
+  if !isnull(a.startSlice)
+    out = string(get(a.startSlice)) * "-" * out
+  end
+  return out
 end
 
 function toString(a::Alg.Commutator)::String
